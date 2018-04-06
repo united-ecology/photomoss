@@ -9,7 +9,3 @@ Manuel Molina (main), Indra deCastro (collaborator).
 
 ## Aims
 This functions aim at calculating NDVI from...
-
-## Requirements
-ImageJ and packages therein: 
-R and packages therein: raster, tiff, roi... 
