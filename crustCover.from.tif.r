@@ -1,13 +1,18 @@
-chart.from.tif <- function(samp.width = 0.01){
-      file <- list.files(path = "./vis")[1]
-      vis.tiff <- readTIFF(paste("./vis/", file, sep = ""))
+chart.from.tif <- function(tif.path, samp.width = 0.01){
+      file <- Sys.glob(path = paste0(tif.path, "vis/*.tif"))[1]
+      vis.tiff <- readTIFF(file)
       vis.red <- raster(vis.tiff[, , 1])
       vis.green <- raster(vis.tiff[, , 2])
       vis.blue <- raster(vis.tiff[, , 3])
       rgb <- stack(vis.red, vis.green, vis.blue)
       options(warn = -1)
+      
+      op <- par(mfrow=c(1,1), mar=c(0,0,0,0), oma=c(0,0,0,0))
+      on.exit(par(op))
+      # X11()
       plotRGB(rgb, scale = 1, asp = nrow(vis.red)/ncol(vis.red))
       options(warn = 0)
+      
       chart.coords <- data.frame(x = numeric(), y = numeric())
       message("Click on all 24 color chart cells in sequence. The sequence follows left to right and starts at cell 1 (brown, top left) and finishes on cell 24 (black, bottom right).")
       for (i in 1:24) {
@@ -18,6 +23,7 @@ chart.from.tif <- function(samp.width = 0.01){
       sp.chart <- SpatialPoints(chart.coords)
       chart.buff <- gBuffer(sp.chart, width = samp.width, byid = T)
       plot(chart.buff, add = T, col = "green")
+      
       return(chart.buff)
 }
 
@@ -27,31 +33,41 @@ chart.from.tif <- function(samp.width = 0.01){
 ###############################################################
 
 
-drawObs.from.tif <- function(){
-      file <- list.files(path = "./vis")[1]
-      vis.tiff <- readTIFF(paste("./vis/", file, sep = ""))
+extractPIX.from.Poly <- function(tif.path, poly){
+      file <- Sys.glob(path = paste0(tif.path, "vis/*.tif"))[1]
+      vis.tiff <- readTIFF(file)
       vis.red <- raster(vis.tiff[, , 1])
-      vis.green <- raster(vis.tiff[, , 2])
-      vis.blue <- raster(vis.tiff[, , 3])
-      rgb <- stack(vis.red, vis.green, vis.blue)
-      options(warn = -1)
-      plotRGB(rgb, scale = 1, asp = nrow(vis.red)/ncol(vis.red))
-      message("Click at points along the boundary of the observation area in the plotted image. Press the escape key when finished.")
-      poly <- drawPoly()
-      options(warn = 0)
+      # vis.green <- raster(vis.tiff[, , 2])
+      # vis.blue <- raster(vis.tiff[, , 3])
+      # rgb <- stack(vis.red, vis.green, vis.blue)
+      # options(warn = -1)
+      # plotRGB(rgb, scale = 1, asp = nrow(vis.red)/ncol(vis.red))
+      # message("Click at points along the boundary of the observation area in the plotted image. Press the escape key when finished.")
+      # poly <- drawPoly()
+      # options(warn = 0)
       message("Extracting cells. Please wait.")
       cells <- data.frame(extract(vis.red, poly, cellnumbers = T))[, 
                                                                    1]
       out <- data.frame(cells, rowColFromCell(vis.red, cells), 
                         xyFromCell(vis.red, cells))
-      return(list(out, poly))
+      return(out)
 }
 
 ###############################################################
 
-ccSpectral.from.tif <- function(chart, obs.area,
-                                rasters = F, ml = F, ml.cutoff = 0.9, 
+ccSpectral.from.tif <- function(tif.path, chart, obs.area,
+                                rasters = F, ml = F, ml.cutoff = 0.9, pdf = F,
                                 thresholds = c(0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)){
+      
+      # check that the working directory have the MANDATORY sub-directories
+      if(any(list.files(getwd())%in%"nir") & any(list.files(getwd())%in%"vis")){}else{
+            wd <- getwd()
+            setwd(tif.path)
+            on.exit(setwd(wd))
+      }
+      
+      
+      # vis.files <- Sys.glob(path = "vis/*.tif")
       vis.files <- list.files(path = "./vis")
       nir.files <- list.files(path = "./nir")
       out.dir <- paste("output", Sys.time())
@@ -94,7 +110,7 @@ ccSpectral.from.tif <- function(chart, obs.area,
             vis.blue <- raster(vis.tiff[, , 3])
             nir.tiff <- readTIFF(paste("./nir/", nir.files[x], sep = ""))
             nir.blue <- raster(nir.tiff[, , 3]) + 10/256
-            asp = nrow(vis.red)/ncol(vis.red)
+            asp <- nrow(vis.red)/ncol(vis.red)
             all.bands <- stack(vis.red, vis.green, vis.blue, nir.blue)
             names(all.bands) <- c("vis.red", "vis.green", "vis.blue", 
                                   "nir.blue")
@@ -232,49 +248,52 @@ ccSpectral.from.tif <- function(chart, obs.area,
                               overwrite = T)
             }
             pal <- colorRampPalette(colors = rev(brewer.pal(11, "Spectral")))(100)
-            pdf(file = paste(out.dir, "/", names[x], ".pdf", sep = ""), 
-                w = 10, h = 25)
-            par(mfrow = c(7, 3))
-            hist(ndvi, breaks = 1000, main = "NDVI Distribution")
-            plot(ndvi, col = pal, main = "NDVI Values", axes = FALSE, 
-                 box = FALSE, asp = asp)
-            plot(ndvi.cut, col = c("black", "green"), legend = F, 
-                 main = paste("NDVI Binary Cover threshold", thresholds[1]), 
-                 axes = FALSE, box = FALSE, asp = asp)
-            hist(sr, breaks = 1000, main = "SR Distribution")
-            plot(sr, col = pal, main = "SR Values", axes = FALSE, 
-                 box = FALSE, asp = asp)
-            plot(sr.cut, col = c("black", "green"), legend = F, main = paste("SR Binary Cover threshold", 
-                                                                             thresholds[2]), axes = FALSE, box = FALSE, asp = asp)
-            hist(msavi, breaks = 1000, main = "MSAVI Distribution")
-            plot(msavi, col = pal, main = "MSAVI Values", axes = FALSE, 
-                 box = FALSE, asp = asp)
-            plot(msavi.cut, col = c("black", "green"), legend = F, 
-                 main = paste("MSAVI Binary Cover threshold", thresholds[3]), 
-                 axes = FALSE, box = FALSE, asp = asp)
-            hist(evi, breaks = 1000, main = "EVI Distribution")
-            plot(evi, col = pal, main = "EVI Values", axes = FALSE, 
-                 box = FALSE, asp = asp)
-            plot(evi.cut, col = c("black", "green"), legend = F, 
-                 main = paste("EVI Binary Cover threshold", thresholds[4]), 
-                 axes = FALSE, box = FALSE, asp = asp)
-            hist(ci, breaks = 1000, main = "Crust Index Distribution")
-            plot(ci, col = pal, main = "Crust Index Values", axes = FALSE, 
-                 box = FALSE, asp = asp)
-            plot(ci.cut, col = c("black", "green"), legend = F, main = paste("Crust Index Binary Cover threshold", 
-                                                                             thresholds[5]), axes = FALSE, box = FALSE, asp = asp)
-            hist(bsci, breaks = 1000, main = "BSCI Index Distribution")
-            plot(bsci, col = pal, main = "BSC Index Values", axes = FALSE, 
-                 box = FALSE, asp = asp)
-            plot(bsci.cut, col = c("black", "green"), legend = F, 
-                 main = paste("BSC Index Binary Cover threshold", 
-                              thresholds[6]), axes = FALSE, box = FALSE, asp = asp)
-            hist(bi, breaks = 1000, main = "Brightness Index Distribution")
-            plot(bi, col = pal, main = "Brightness Index Values", 
-                 axes = FALSE, box = FALSE, asp = asp)
-            plot(bi.cut, col = c("black", "green"), legend = F, main = paste("Brightness Index Binary Cover threshold", 
-                                                                             thresholds[7]), axes = FALSE, box = FALSE, asp = asp)
-            dev.off()
+            
+            if(pdf == T){
+                  pdf(file = paste(out.dir, "/", names[x], ".pdf", sep = ""),
+                      w = 10, h = 25)
+                  par(mfrow = c(7, 3))
+                  hist(ndvi, breaks = 1000, main = "NDVI Distribution")
+                  plot(ndvi, col = pal, main = "NDVI Values", axes = FALSE,
+                       box = FALSE, asp = asp)
+                  plot(ndvi.cut, col = c("black", "green"), legend = F,
+                       main = paste("NDVI Binary Cover threshold", thresholds[1]),
+                       axes = FALSE, box = FALSE, asp = asp)
+                  hist(sr, breaks = 1000, main = "SR Distribution")
+                  plot(sr, col = pal, main = "SR Values", axes = FALSE,
+                       box = FALSE, asp = asp)
+                  plot(sr.cut, col = c("black", "green"), legend = F, main = paste("SR Binary Cover threshold",
+                                                                                   thresholds[2]), axes = FALSE, box = FALSE, asp = asp)
+                  hist(msavi, breaks = 1000, main = "MSAVI Distribution")
+                  plot(msavi, col = pal, main = "MSAVI Values", axes = FALSE,
+                       box = FALSE, asp = asp)
+                  plot(msavi.cut, col = c("black", "green"), legend = F,
+                       main = paste("MSAVI Binary Cover threshold", thresholds[3]),
+                       axes = FALSE, box = FALSE, asp = asp)
+                  hist(evi, breaks = 1000, main = "EVI Distribution")
+                  plot(evi, col = pal, main = "EVI Values", axes = FALSE,
+                       box = FALSE, asp = asp)
+                  plot(evi.cut, col = c("black", "green"), legend = F,
+                       main = paste("EVI Binary Cover threshold", thresholds[4]),
+                       axes = FALSE, box = FALSE, asp = asp)
+                  hist(ci, breaks = 1000, main = "Crust Index Distribution")
+                  plot(ci, col = pal, main = "Crust Index Values", axes = FALSE,
+                       box = FALSE, asp = asp)
+                  plot(ci.cut, col = c("black", "green"), legend = F, main = paste("Crust Index Binary Cover threshold",
+                                                                                   thresholds[5]), axes = FALSE, box = FALSE, asp = asp)
+                  hist(bsci, breaks = 1000, main = "BSCI Index Distribution")
+                  plot(bsci, col = pal, main = "BSC Index Values", axes = FALSE,
+                       box = FALSE, asp = asp)
+                  plot(bsci.cut, col = c("black", "green"), legend = F,
+                       main = paste("BSC Index Binary Cover threshold",
+                                    thresholds[6]), axes = FALSE, box = FALSE, asp = asp)
+                  hist(bi, breaks = 1000, main = "Brightness Index Distribution")
+                  plot(bi, col = pal, main = "Brightness Index Values",
+                       axes = FALSE, box = FALSE, asp = asp)
+                  plot(bi.cut, col = c("black", "green"), legend = F, main = paste("Brightness Index Binary Cover threshold",
+                                                                                   thresholds[7]), axes = FALSE, box = FALSE, asp = asp)
+                  dev.off()
+            }
             dat <- read.csv(paste(out.dir, "/summary_data.csv", sep = ""))
             ndvi.mean <- cellStats(ndvi, stat = "mean")
             ndvi.median <- median(na.omit(values(ndvi)))
@@ -318,7 +337,7 @@ ccSpectral.from.tif <- function(chart, obs.area,
                                       sep = ""), row.names = F)
             message(paste(names[x], "processed..."))
       }
+      
       lapply(FUN = calcs, X = 1:length(names))
-      message("Processed files may be found at: ", paste(getwd(), 
-                                                         "/output ", Sys.time(), sep = ""))
+      message("Processed files may be found at: ", paste0(tif.path, out.dir))
 }
