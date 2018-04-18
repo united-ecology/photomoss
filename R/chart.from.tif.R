@@ -1,7 +1,6 @@
-chart.from.tif <-
-function(tif.path, samp.width = 0.01){
+chart.from.tif <- function(tif.path, samp.width = 0.01){
       file <- Sys.glob(path = paste0(tif.path, "vis/*.tif"))[1]
-      vis.tiff <- readTIFF(file)
+      vis.tiff <- tiff::readTIFF(file)
       vis.red <- raster(vis.tiff[, , 1])
       vis.green <- raster(vis.tiff[, , 2])
       vis.blue <- raster(vis.tiff[, , 3])
@@ -21,8 +20,8 @@ function(tif.path, samp.width = 0.01){
             chart.coords[i, 1:2] <- click(xy = T)[1:2]
             options(warn = 0)
       }
-      sp.chart <- SpatialPoints(chart.coords)
-      chart.buff <- gBuffer(sp.chart, width = samp.width, byid = T)
+      sp.chart <- sp::SpatialPoints(chart.coords)
+      chart.buff <- rgeos::gBuffer(sp.chart, width = samp.width, byid = T)
       plot(chart.buff, add = T, col = "green")
       
       return(chart.buff)

@@ -39,7 +39,7 @@ function(tif.path, chart, obs.areas, #sample.names=NULL,
       
       all.named <- expand.grid(vis.files, names(obs.areas))
       names(all.named) <- c("photo", "pocillo")
-      all.named <- arrange(all.named, photo)
+      all.named <- dplyr::arrange(all.named, photo)
       
       if(file.exists("names.csv")) {
             sample.names <- c(as.character(read.csv("names.csv")[, 1]))
@@ -59,8 +59,8 @@ function(tif.path, chart, obs.areas, #sample.names=NULL,
             nir.photo <- nir.files[next.photo]
             
             # select sample name
-            library(data.table)
-            done.samples <- nrow(fread(summary.file, select = 1L, header=T))
+            # library(data.table)
+            done.samples <- nrow(data.table::fread(summary.file, select = 1L, header=T))
             if(file.exists("names.csv")) {
                   sample.names <- c(as.character(read.csv("names.csv")[, 1]))
                   if(length(sample.names)!=total.samples){stop("File of sample names contains less/more names than samples")}
@@ -73,29 +73,13 @@ function(tif.path, chart, obs.areas, #sample.names=NULL,
             print(nir.photo)
             print(paste0(names(obs.areas)[next.area], ": ", sample.name))
             
-            #########################
-            # AVOID CALCULATING INDEXES FOR MOSSLESS POTS
-            # if(sample.name=="mossless"){
-            #       obs.area <- obs.areas[[next.area+1]]
-            #       vis.photo <- vis.files[next.photo+1]
-            #       nir.photo <- nir.files[next.photo+1]
-            #       sample.name <- if(done.samples>0){sample.name <- sample.names[done.samples+2]}else{sample.name <- sample.names[2]}
-            #       # check all single elements have been correctly set
-            #       print(vis.photo)
-            #       print(nir.photo)
-            #       print(paste0(names(obs.areas)[next.area], ": ", sample.name))
-            # }
-            #########################
- 
-
-            
             # start calculating things
-            vis.tiff <- readTIFF(paste("./vis/", vis.photo, sep = ""))
+            vis.tiff <- tiff::readTIFF(paste("./vis/", vis.photo, sep = ""))
             vis.red <- raster(vis.tiff[, , 1])
             vis.green <- raster(vis.tiff[, , 2])
             vis.blue <- raster(vis.tiff[, , 3])
             
-            nir.tiff <- readTIFF(paste("./nir/", nir.photo, sep = ""))
+            nir.tiff <- tiff::readTIFF(paste("./nir/", nir.photo, sep = ""))
             nir.blue <- raster(nir.tiff[, , 3]) + 10/256
             
             asp <- nrow(vis.red)/ncol(vis.red)
@@ -188,11 +172,12 @@ function(tif.path, chart, obs.areas, #sample.names=NULL,
          
             ###### IF RASTERSSSS
             
-            pal <- colorRampPalette(colors = rev(brewer.pal(11, "Spectral")))(100)
+            pal <- colorRampPalette(colors = rev(
+                  RColorBrewer::brewer.pal(11, "Spectral")))(100)
             
             ###### START PDF
             if(pdf == T){
-                  pdf(file = paste(out.dir, "/", sample.name, ".pdf", sep = ""),
+                  pdf(file = paste0(out.dir, "/", sample.name, ".pdf"),
                       w = 10, h = 25)
                   par(mfrow = c(7, 3))
                   hist(ndvi, breaks = 1000, main = "NDVI Distribution")
@@ -288,17 +273,11 @@ function(tif.path, chart, obs.areas, #sample.names=NULL,
       
       
       # EXECUTE THE CALCS FUNCTION
-      # lapply(1:length(sample.names), function(picture){lapply(obs.areas, function(area){calcs(picture, area)})})
-      
       all <- expand.grid(1:length(vis.files), 1:length(obs.areas))
-      all <- arrange(all, Var1)
-      # all <- all[all.named$moss!="mossless",]
+      all <- dplyr::arrange(all, Var1)
       print(all)
+      
       message("Starting calculations...")
       apply(all, 1, function(pair){calcs(pair[1], pair[2])})
-      # lapply(1:length(vis.files), function(npic){
-            # lapply(obs.areas, function(narea){calcs(npic, narea)})})
-      
-      
       message("Processed files may be found at: ", paste0(tif.path, out.dir))
 }

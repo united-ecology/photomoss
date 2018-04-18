@@ -1,7 +1,7 @@
 roi2polygon <-
 function(roi.path, tif.path){
       # Para importar los archivos punto .roi instalamos el paquete "RImageJROI"
-      library(RImageJROI)
+      # library(RImageJROI)
       
       # Importamos el área de interes que creamos con Image J
       # usamos como EJEMPLO la número 5 (la numeración de las celdillas las sabemos gracias  a la referencia
@@ -10,16 +10,16 @@ function(roi.path, tif.path){
       # roi.path <- "roi/"
       # roi.file.names <- Sys.glob(paste0(roi.path, "*.roi"))
       roi.file.names <- roi.path
-      x_roi5 <- read.ijroi(roi.file.names, verbose = FALSE)
+      x_roi5 <- RImageJROI::read.ijroi(roi.file.names, verbose = FALSE)
       
       # una vez importada el área de interés a nuestro Global Environment vamos a necesitar hacer una serie de cambios de formato
       # hasta llegar a tener objetos SpatialPolygons legibles por crusCover
       
       # para ello, instalamos el paquete "spatstat"
-      library(spatstat)
+      # library(spatstat)
       
       # primero lo transformamos a formato owin (ijroi ->  owin)
-      x_owin5 <- ij2spatstat(x_roi5)
+      x_owin5 <- RImageJROI::ij2spatstat(x_roi5)
       
       # Ahora hacemos dos operaciones que son necesarias para que las ventanas coincidan sobre la imagen que proyecta crustCover:
       # 1) es necesario invertir las coordenadas del eje Y de la ventana, pues imageJ proyecta el eje Y
@@ -30,8 +30,8 @@ function(roi.path, tif.path){
       # Establecemos la imagen de referencia para hacer los siguietes cálculos
       # tif.path <- "tif/"
       first.tif.filename <- Sys.glob(paste0(tif.path, "vis/*.tif"))[[1]]
-      library(raster)
-      RGB_stack_DEM <-stack(first.tif.filename)
+      # library(raster)
+      RGB_stack_DEM <- stack(first.tif.filename)
       bandred <- raster(first.tif.filename, band=1)
       
       # En el vector de coordenadas y de la ventana hcemos la operación 1 y 2
