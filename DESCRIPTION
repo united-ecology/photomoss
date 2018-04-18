@@ -9,4 +9,4 @@ Description: photomoss calculate spectral indices for several areas of interest 
 License: GPL (>= 2)
 Imports: Rcpp (>= 0.12.9)
 LinkingTo: Rcpp
-Depends: dplyr, rgeos, raster, tiff, 
+Depends: dplyr, rgeos, raster, tiff
