@@ -1,0 +1,12 @@
+Package: photomoss
+Type: Package
+Title: photomoss calculate spectral indices for several areas of interest in multiple VIS and NIR pairs of photos.
+Version: 1.0
+Date: 2018-04-18
+Author: Manuel Molina (modified from package crustcover) with essential collaboration from Indradatta deCastro-Arrazola
+Maintainer: Indradatta deCastro-Arrazola <indra@mncn.csic.es>
+Description: photomoss calculate spectral indices for several areas of interest in multiple VIS and NIR pairs of photos.
+License: GPL (>= 2)
+Imports: Rcpp (>= 0.12.9)
+LinkingTo: Rcpp
+Depends: dplyr, rgeos, raster, tiff, 

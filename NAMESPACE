@@ -1,0 +1,3 @@
+useDynLib(photomoss, .registration=TRUE)
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)
