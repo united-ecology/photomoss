@@ -1,5 +1,4 @@
-change.labels.order <-
-function(path) {
+change.labels.order <- function(path) {
   all.names <- read.csv(path)
   
   pots <- nrow(all.names)

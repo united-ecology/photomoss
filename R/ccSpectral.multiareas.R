@@ -1,5 +1,4 @@
-ccSpectral.multiareas <-
-function(tif.path, chart, obs.areas, #sample.names=NULL,
+ccSpectral.multiareas <- function(tif.path, chart, obs.areas, #sample.names=NULL,
                                 rasters = F, ml = F, ml.cutoff = 0.9, pdf = F,
                                 thresholds = c(0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)){
       

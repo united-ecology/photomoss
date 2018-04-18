@@ -44,10 +44,10 @@ function(roi.path, tif.path){
       #Unimos los vectores
       xym5 <-  cbind(x = w5_x, y = w5_y_corr)
       #creamos el polígono
-      p5 <-  Polygon(xym5)
+      p5 <-  sp::Polygon(xym5)
       # Creamos la lista de polígonos con un solo polígono, en este ejemplo el pocillo 5
-      ps5 <- Polygons(list(p5), "pocillo 5")
+      ps5 <- sp::Polygons(list(p5), "pocillo 5")
       # creamos el objeto SpatialPolygons
-      sps <- SpatialPolygons(list(ps5))
+      sps <- sp::SpatialPolygons(list(ps5))
       return(sps)
 }
