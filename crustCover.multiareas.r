@@ -55,7 +55,7 @@ extractPIX.from.Poly <- function(tif.path, poly){
 
 ###############################################################
 
-ccSpectral.from.tif <- function(tif.path, chart, obs.area,
+ccSpectral.multiareas <- function(tif.path, chart, obs.areas, #sample.names=NULL,
                                 rasters = F, ml = F, ml.cutoff = 0.9, pdf = F,
                                 thresholds = c(0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)){
       
@@ -67,60 +67,101 @@ ccSpectral.from.tif <- function(tif.path, chart, obs.area,
       }
       
       
-      # vis.files <- Sys.glob(path = "vis/*.tif")
       vis.files <- list.files(path = "./vis")
       nir.files <- list.files(path = "./nir")
+      if(length(vis.files)!=length(nir.files)){stop("Different number of VIS and NIR photos")}
+      
       out.dir <- paste("output", Sys.time())
       dir.create(out.dir)
-      df <- data.frame(unit <- character(), vis.file <- character(), 
-                       nir.file <- character(), red.rsq <- numeric(), green.rsq <- numeric(), 
-                       blue.rsq <- numeric(), nir.rsq <- numeric(), ndvi.median <- numeric(), 
-                       ndvi.mean <- numeric(), ndvi.threshold <- numeric(), 
-                       ndvi.cover <- numeric(), vi.median <- numeric(), vi.mean <- numeric(), 
-                       vi.threshold <- numeric(), vi.cover <- numeric(), msavi.median <- numeric(), 
-                       msavi.mean <- numeric(), msavi.threshold <- numeric(), 
-                       msavi.cover <- numeric(), evi.median <- numeric(), evi.mean <- numeric(), 
-                       evi.threshold <- numeric(), evi.cover <- numeric(), bsci.median <- numeric(), 
-                       ci.mean <- numeric(), ci.threshold <- numeric(), ci.cover <- numeric(), 
-                       bsci.median <- numeric(), bsci.mean <- numeric(), bsci.threshold <- numeric(), 
-                       bsci.cover <- numeric(), bi.median <- numeric(), bi.mean <- numeric(), 
-                       bi.threshold <- numeric(), bi.cover <- numeric())
-      colnames(df) <- c("unit", "vis.file", "nir.file", "red.rsq", 
-                        "green.rsq", "blue.rsq", "nir.rsq", "ndvi.median", "ndvi.mean", 
-                        "ndvi.threshold", "ndvi.cover", "sr.median", "sr.mean", 
-                        "sr.threshold", "sr.cover", "msavi.median", "msavi.mean", 
-                        "msavi.threshold", "msavi.cover", "evi.median", "evi.mean", 
-                        "evi.threshold", "evi.cover", "ci.median", "ci.mean", 
-                        "ci.threshold", "ci.cover", "bsci.median", "bsci.mean", 
-                        "bsci.threshold", "bsci.cover", "bi.median", "bi.mean", 
-                        "bi.threshold", "bi.cover")
-      write.csv(df, paste(out.dir, "/summary_data.csv", sep = ""), 
-                row.names = F)
-      if (file.exists("names.csv")) {
-            names <- c(as.character(read.csv("names.csv")[, 1]))
-      }
-      else {
-            names <- c(names = paste("obs_", 1:length(vis.files), 
-                                     sep = ""))
-      }
-      calcs <- function(x) {
-            vis.tiff <- readTIFF(paste("./vis/", vis.files[x], sep = ""))
+      df <- data.frame("unit"=character(), "vis.file"=character(), 
+                       "nir.file"=character(), "red.rsq"=numeric(), "green.rsq"=numeric(), 
+                       "blue.rsq"=numeric(), "nir.rsq"=numeric(), "ndvi.median"=numeric(), 
+                       "ndvi.mean"=numeric(), "ndvi.threshold"=numeric(), 
+                       "ndvi.cover"=numeric(), "vi.median"=numeric(), "vi.mean"=numeric(), 
+                       "vi.threshold"=numeric(), "vi.cover"=numeric(), "msavi.median"=numeric(), 
+                       "msavi.mean"=numeric(), "msavi.threshold"=numeric(), 
+                       "msavi.cover"=numeric(), "evi.median"=numeric(), "evi.mean"=numeric(), 
+                       "evi.threshold"=numeric(), "evi.cover"=numeric(), "bsci.median"=numeric(), 
+                       "ci.mean"=numeric(), "ci.threshold"=numeric(), "ci.cover"=numeric(), 
+                       "bsci.median"=numeric(), "bsci.mean"=numeric(), "bsci.threshold"=numeric(), 
+                       "bsci.cover"=numeric(), "bi.median"=numeric(), "bi.mean"=numeric(), 
+                       "bi.threshold"=numeric(), "bi.cover"=numeric())
+      
+      summary.file <- paste0(out.dir, "/summary_data.csv")
+      if(!file.exists(summary.file)){write.csv(df, summary.file, row.names = F)}
+      
+      total.samples <- length(vis.files)*length(obs.areas)
+      message(paste0(length(vis.files), " pictures with ", length(obs.areas), " areas each = ", total.samples, " total samples"))
+      
+      all.named <- expand.grid(vis.files, names(obs.areas))
+      names(all.named) <- c("photo", "pocillo")
+      all.named <- arrange(all.named, photo)
+      
+      if(file.exists("names.csv")) {
+            sample.names <- c(as.character(read.csv("names.csv")[, 1]))
+            if(length(sample.names)!=total.samples){stop("File of sample names contains less/more names than samples")}
+            all.named$moss <- sample.names
+      }else{all.named$moss <- c(names = paste0("obs_", 1:(total.samples)))}
+
+      print(all.named)
+      
+      ##################################
+      ### calcs function
+      calcs <- function(next.photo, next.area) {
+            
+            # setup single objects to use in calcs
+            obs.area <- obs.areas[[next.area]]
+            vis.photo <- vis.files[next.photo]
+            nir.photo <- nir.files[next.photo]
+            
+            # select sample name
+            library(data.table)
+            done.samples <- nrow(fread(summary.file, select = 1L, header=T))
+            if(file.exists("names.csv")) {
+                  sample.names <- c(as.character(read.csv("names.csv")[, 1]))
+                  if(length(sample.names)!=total.samples){stop("File of sample names contains less/more names than samples")}
+                  # if(next.sample!=next.photo*length(obs.areas)+next.area){stop("Somehow you managed to mix things up! :(")}
+            }else{sample.names <- c(names = paste0("obs_", 1:(total.samples)))}
+            if(done.samples>0){sample.name <- sample.names[done.samples+1]}else{sample.name <- sample.names[1]}
+            
+            # check all single elements have been correctly set
+            print(vis.photo)
+            print(nir.photo)
+            print(paste0(names(obs.areas)[next.area], ": ", sample.name))
+            
+            #########################
+            # AVOID CALCULATING INDEXES FOR MOSSLESS POTS
+            # if(sample.name=="mossless"){
+            #       obs.area <- obs.areas[[next.area+1]]
+            #       vis.photo <- vis.files[next.photo+1]
+            #       nir.photo <- nir.files[next.photo+1]
+            #       sample.name <- if(done.samples>0){sample.name <- sample.names[done.samples+2]}else{sample.name <- sample.names[2]}
+            #       # check all single elements have been correctly set
+            #       print(vis.photo)
+            #       print(nir.photo)
+            #       print(paste0(names(obs.areas)[next.area], ": ", sample.name))
+            # }
+            #########################
+ 
+
+            
+            # start calculating things
+            vis.tiff <- readTIFF(paste("./vis/", vis.photo, sep = ""))
             vis.red <- raster(vis.tiff[, , 1])
             vis.green <- raster(vis.tiff[, , 2])
             vis.blue <- raster(vis.tiff[, , 3])
-            nir.tiff <- readTIFF(paste("./nir/", nir.files[x], sep = ""))
+            
+            nir.tiff <- readTIFF(paste("./nir/", nir.photo, sep = ""))
             nir.blue <- raster(nir.tiff[, , 3]) + 10/256
+            
             asp <- nrow(vis.red)/ncol(vis.red)
             all.bands <- stack(vis.red, vis.green, vis.blue, nir.blue)
-            names(all.bands) <- c("vis.red", "vis.green", "vis.blue", 
-                                  "nir.blue")
-            obs.ext <- extent(min(obs.area$x), max(obs.area$x), min(obs.area$y), 
-                              max(obs.area$y))
-            temp.mat <- raster(matrix(data = NA, nrow = nrow(all.bands), 
-                                      ncol = ncol(all.bands), byrow = T))
+            names(all.bands) <- c("vis.red", "vis.green", "vis.blue", "nir.blue")
+            
+            obs.ext <- extent(min(obs.area$x), max(obs.area$x), min(obs.area$y), max(obs.area$y))
+            temp.mat <- raster(matrix(data = NA, nrow = nrow(all.bands), ncol = ncol(all.bands), byrow = T))
             bands.df <- data.frame(extract(all.bands, obs.area$cells))
-            colnames(bands.df) <- c("vis.red", "vis.green", "vis.blue", 
-                                    "nir.blue")
+            colnames(bands.df) <- c("vis.red", "vis.green", "vis.blue", "nir.blue")
             train.df <- data.frame()
             chart.vals <- data.frame(red.chart = c(0.17, 0.63, 0.15, 0.11, 0.31, 0.2, 0.63, 0.12,
                                                    0.57, 0.21, 0.33, 0.67, 0.04, 0.1, 0.6, 0.79, 0.7,
@@ -146,6 +187,7 @@ ccSpectral.from.tif <- function(tif.path, chart, obs.area,
                   }
                   train.df <- rbind(train.df, df.samp)
             }
+            
             red.nls <- nls(red.chart ~ (a * exp(b * vis.red)), trace = F, 
                            data = train.df, start = c(a = 0.1, b = 0.1))
             red.preds <- predict(red.nls, bands.df)
@@ -170,6 +212,7 @@ ccSpectral.from.tif <- function(tif.path, chart, obs.area,
             blue.mat <- temp.mat
             values(blue.mat)[obs.area$cells] <- blue.preds
             blue.mat <- crop(blue.mat, extent(obs.ext))
+            
             nir.nls <- nls(nir.chart ~ (a * exp(b * nir.blue)), trace = F, 
                            data = train.df, start = c(a = 0.1, b = 0.1))
             nir.preds <- predict(nir.nls, bands.df)
@@ -178,48 +221,9 @@ ccSpectral.from.tif <- function(tif.path, chart, obs.area,
             nir.mat <- temp.mat
             values(nir.mat)[obs.area$cells] <- nir.preds
             nir.mat <- crop(nir.mat, extent(obs.ext))
-            if (ml == T) {
-                  rf.mod <- rfsrc(cbind(nir.chart + red.chart + green.chart + 
-                                              blue.chart) ~ vis.red + vis.green + vis.blue, 
-                                  data = train.df, ntree = 250, tree.err = T, set.seed = 123)
-                  rf.preds <- predict(rf.mod, bands.df)
-                  nir.ml <- temp.mat
-                  red.ml <- temp.mat
-                  green.ml <- temp.mat
-                  blue.ml <- temp.mat
-                  nir.rsq.ml <- 1 - sum((train.df$nir.chart - rf.mod$regrOutput$nir.chart$predicted.oob)^2)/(length(train.df$nir.chart) * 
-                                                                                                                   var(train.df$nir.chart))
-                  red.rsq.ml <- 1 - sum((train.df$red.chart - rf.mod$regrOutput$red.chart$predicted.oob)^2)/(length(train.df$red.chart) * 
-                                                                                                                   var(train.df$red.chart))
-                  green.rsq.ml <- 1 - sum((train.df$green.chart - rf.mod$regrOutput$green.chart$predicted.oob)^2)/(length(train.df$green.chart) * 
-                                                                                                                         var(train.df$green.chart))
-                  blue.rsq.ml <- 1 - sum((train.df$blue.chart - rf.mod$regrOutput$blue.chart$predicted.oob)^2)/(length(train.df$blue.chart) * 
-                                                                                                                      var(train.df$blue.chart))
-                  values(nir.ml)[obs.area$cells] <- rf.preds$regrOutput$nir.chart$predicted
-                  values(red.ml)[obs.area$cells] <- rf.preds$regrOutput$red.chart$predicted
-                  values(green.ml)[obs.area$cells] <- rf.preds$regrOutput$green.chart$predicted
-                  values(blue.ml)[obs.area$cells] <- rf.preds$regrOutput$blue.chart$predicted
-                  nir.ml <- crop(nir.ml, extent(obs.ext))
-                  red.ml <- crop(red.ml, extent(obs.ext))
-                  green.ml <- crop(green.ml, extent(obs.ext))
-                  blue.ml <- crop(blue.ml, extent(obs.ext))
-                  if (nir.rsq < ml.cutoff) {
-                        nir.mat <- nir.ml
-                        nir.rsq <- nir.rsq.ml
-                  }
-                  if (red.rsq < ml.cutoff) {
-                        red.mat <- red.ml
-                        red.rsq <- red.rsq.ml
-                  }
-                  if (green.rsq < ml.cutoff) {
-                        green.mat <- green.ml
-                        green.rsq <- green.rsq.ml
-                  }
-                  if (blue.rsq < ml.cutoff) {
-                        blue.mat <- blue.ml
-                        blue.rsq <- blue.rsq.ml
-                  }
-            }
+            
+            ###### IF ML
+            
             ndvi <- (nir.mat - red.mat)/(nir.mat + red.mat)
             sr <- nir.mat/red.mat
             msavi <- (2 * nir.mat + 1 - sqrt((2 * nir.mat + 1)^2 - 
@@ -237,20 +241,14 @@ ccSpectral.from.tif <- function(tif.path, chart, obs.area,
             ci.cut <- ci >= thresholds[5]
             bsci.cut <- bsci >= thresholds[6]
             bi.cut <- bi <= thresholds[7]
-            if (rasters == T) {
-                  writeRaster(round(stack(ndvi, sr, msavi, evi, ci, 
-                                          bsci, bi) * 1000), paste(out.dir, "/", names[x], 
-                                                                   "_spectral_stack.tif", sep = ""), format = "GTiff", 
-                              overwrite = T)
-                  writeRaster(stack(ndvi.cut, sr.cut, msavi.cut, evi.cut, 
-                                    ci.cut, bsci.cut, bi.cut), paste(out.dir, "/", 
-                                                                     names[x], "_cover_stack.tif", sep = ""), format = "GTiff", 
-                              overwrite = T)
-            }
+         
+            ###### IF RASTERSSSS
+            
             pal <- colorRampPalette(colors = rev(brewer.pal(11, "Spectral")))(100)
             
+            ###### START PDF
             if(pdf == T){
-                  pdf(file = paste(out.dir, "/", names[x], ".pdf", sep = ""),
+                  pdf(file = paste(out.dir, "/", sample.name, ".pdf", sep = ""),
                       w = 10, h = 25)
                   par(mfrow = c(7, 3))
                   hist(ndvi, breaks = 1000, main = "NDVI Distribution")
@@ -294,7 +292,10 @@ ccSpectral.from.tif <- function(tif.path, chart, obs.area,
                                                                                    thresholds[7]), axes = FALSE, box = FALSE, asp = asp)
                   dev.off()
             }
-            dat <- read.csv(paste(out.dir, "/summary_data.csv", sep = ""))
+            
+            ###### END PDF
+            
+            dat <- read.csv(summary.file)
             ndvi.mean <- cellStats(ndvi, stat = "mean")
             ndvi.median <- median(na.omit(values(ndvi)))
             ndvi.cover <- nrow(rasterToPoints(reclassify(ndvi.cut, 
@@ -323,7 +324,8 @@ ccSpectral.from.tif <- function(tif.path, chart, obs.area,
             bi.median <- median(na.omit(values(bi)))
             bi.cover <- nrow(rasterToPoints(reclassify(bi.cut, rcl = cbind(0, 
                                                                            NA))))/nrow(obs.area)
-            new.dat <- data.frame(names[x], vis.files[x], nir.files[x], 
+            
+            new.dat <- data.frame(sample.name, vis.photo, nir.photo, 
                                   red.rsq, green.rsq, blue.rsq, nir.rsq, ndvi.median, 
                                   ndvi.mean, thresholds[1], ndvi.cover, sr.median, 
                                   sr.mean, thresholds[2], sr.cover, msavi.mean, msavi.median, 
@@ -333,11 +335,26 @@ ccSpectral.from.tif <- function(tif.path, chart, obs.area,
                                   bsci.cover, bi.mean, bi.median, thresholds[7], bi.cover)
             colnames(new.dat) <- colnames(dat)
             dat.bind <- rbind(dat, new.dat)
-            write.csv(dat.bind, paste(out.dir, "/summary_data.csv", 
-                                      sep = ""), row.names = F)
-            message(paste(names[x], "processed..."))
+            write.csv(dat.bind, summary.file, row.names = F)
+            
+            message(paste0(sample.name, " processed... (",
+                          100* round((done.samples+1)/total.samples, 2), " %)"))
       }
       
-      lapply(FUN = calcs, X = 1:length(names))
+      
+      
+      # EXECUTE THE CALCS FUNCTION
+      # lapply(1:length(sample.names), function(picture){lapply(obs.areas, function(area){calcs(picture, area)})})
+      
+      all <- expand.grid(1:length(vis.files), 1:length(obs.areas))
+      all <- arrange(all, Var1)
+      # all <- all[all.named$moss!="mossless",]
+      print(all)
+      message("Starting calculations...")
+      apply(all, 1, function(pair){calcs(pair[1], pair[2])})
+      # lapply(1:length(vis.files), function(npic){
+            # lapply(obs.areas, function(narea){calcs(npic, narea)})})
+      
+      
       message("Processed files may be found at: ", paste0(tif.path, out.dir))
 }
