@@ -8,4 +8,4 @@ Maintainer: Indradatta deCastro-Arrazola <indra@mncn.csic.es>
 Description: photomoss calculate spectral indices for several areas of interest in multiple VIS and NIR pairs of photos.
 License: GPL (>= 2)
 Depends: raster
-Imports: dplyr, sp, rgeos, RColorBrewer, data.table, 
+Imports: dplyr, sp, rgeos, RColorBrewer, data.table, tiff, RImageJROI
