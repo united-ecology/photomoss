@@ -2,7 +2,7 @@
 \alias{roi2polygon}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-%%  ~~function to do ... ~~
+Convert a roi object (from ImageJ program) to an object of class SpatialPolygons
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~

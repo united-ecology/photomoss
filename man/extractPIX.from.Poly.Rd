@@ -2,7 +2,7 @@
 \alias{extractPIX.from.Poly}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-%%  ~~function to do ... ~~
+Given a polygon, selects the pixels contained in it
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~

@@ -2,7 +2,7 @@
 \alias{names}
 \docType{data}
 \title{
-%%   ~~ data name/kind ... ~~
+A .csv file containing names of the samples in the areas to be analyzed.
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of the dataset. ~~

@@ -2,7 +2,7 @@
 \alias{ccSpectral.multiareas}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-%%  ~~function to do ... ~~
+Core function to calculate all spectral indices from multiple areas for each photo
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
