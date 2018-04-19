@@ -35,7 +35,7 @@ function(roi.path, tif.path){
       bandred <- raster(first.tif.filename, band=1)
       
       # En el vector de coordenadas y de la ventana hcemos la operación 1 y 2
-      w5_y_corr <- (nrow(as.matrix(bandred)) - (as.data.frame(x_owin5))$y) / nrow(RGB_stack_DEM)
+      w5_y_corr <- (nrow(as.matrix(bandred)) - (as.data.frame(x_owin5))$y) / raster::nrow(RGB_stack_DEM)
       
       # En el vector de coordenadas x de la ventana hacemos solo la operación 2
       w5_x <- (as.data.frame(x_owin5))$x / ncol(RGB_stack_DEM)
