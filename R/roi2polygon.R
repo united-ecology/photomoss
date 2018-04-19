@@ -31,8 +31,8 @@ function(roi.path, tif.path){
       # tif.path <- "tif/"
       first.tif.filename <- Sys.glob(paste0(tif.path, "vis/*.tif"))[[1]]
       # library(raster)
-      RGB_stack_DEM <- raster::stack(first.tif.filename)
-      bandred <- raster::raster(first.tif.filename, band=1)
+      RGB_stack_DEM <- stack(first.tif.filename)
+      bandred <- raster(first.tif.filename, band=1)
       
       # En el vector de coordenadas y de la ventana hcemos la operación 1 y 2
       w5_y_corr <- (nrow(as.matrix(bandred)) - (as.data.frame(x_owin5))$y) / nrow(RGB_stack_DEM)
@@ -49,5 +49,6 @@ function(roi.path, tif.path){
       ps5 <- sp::Polygons(list(p5), "pocillo 5")
       # creamos el objeto SpatialPolygons
       sps <- sp::SpatialPolygons(list(ps5))
+      # plot(sps, add=T, col="red")
       return(sps)
 }
