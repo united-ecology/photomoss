@@ -1,12 +1,19 @@
 Package: photomoss
 Type: Package
-Title: photomoss calculate spectral indices for several areas of interest in multiple VIS and NIR pairs of photos.
+Title: Calculates Spectral Indices for Multiple Areas per Photo
 Version: 1.0
 Date: 2018-04-18
-Author: Manuel Molina (modified from package crustcover) with essential collaboration from Indradatta deCastro-Arrazola
+Author: Manuel Molina with essential collaboration from Indradatta deCastro-Arrazola
 Maintainer: Indradatta deCastro-Arrazola <indra@mncn.csic.es>
-Description: photomoss calculate spectral indices for several areas of interest in multiple VIS and NIR pairs of photos.
+Authors@R: c(
+    person("Indradatta", "deCastro-Arrazola", email = "indra@mncn.csic.es", role = c("aut", "cre")),
+    person("Manuel", "Molina", email = "manuel.molbus@gmail.com", role = "aut"))
+
+Description: Calculates spectral indices (NDVI...) for several areas of interest in multiple
+    VIS (=VISible) and NIR (=Near InfraRed) pairs of photos. The package is 
+    heavily based on package crustcover (available at GitHub username mosscoder).
 License: GPL (>= 2)
 Depends: raster
 Imports: dplyr, rgeos, data.table, tiff, sp, RColorBrewer, spatstat, RImageJROI
-ByteCompile: false
+BugReports: https://github.com/united-ecology/photomoss/issues
+LazyData: true

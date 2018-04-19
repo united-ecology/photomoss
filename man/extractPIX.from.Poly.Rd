@@ -13,10 +13,10 @@ extractPIX.from.Poly(tif.path, poly)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{tif.path}{
-%%     ~~Describe \code{tif.path} here~~
+Path (can be relative to the working directory \code{getwd()}) to a directory with 2 subdirectories named "nir" and "vis"
 }
   \item{poly}{
-%%     ~~Describe \code{poly} here~~
+An object of class SpatialPolygons that selects the area in which ccSpectral.multiarea will calculate indices.
 }
 }
 \details{
@@ -49,20 +49,6 @@ extractPIX.from.Poly(tif.path, poly)
 ##-- ==>  Define data, use random,
 ##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-function (tif.path, poly) 
-{
-    file <- Sys.glob(path = paste0(tif.path, "vis/*.tif"))[1]
-    vis.tiff <- readTIFF(file)
-    vis.red <- raster(vis.tiff[, , 1])
-    message("Extracting cells. Please wait.")
-    cells <- data.frame(extract(vis.red, poly, cellnumbers = T))[, 
-        1]
-    out <- data.frame(cells, rowColFromCell(vis.red, cells), 
-        xyFromCell(vis.red, cells))
-    return(out)
-  }
-}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{ ~kwd1 }% use one of  RShowDoc("KEYWORDS")
