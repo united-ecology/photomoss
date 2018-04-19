@@ -1,2 +1,0 @@
-useDynLib(photomoss, .registration=TRUE)
-exportPattern("^[[:alpha:]]+")
