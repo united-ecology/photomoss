@@ -6,10 +6,8 @@ roi2polygon <- function(roi.path, tif.path){
       # usamos como EJEMPLO la número 5 (la numeración de las celdillas las sabemos gracias  a la referencia
       # y orden conocido de los alveolos en la fotografía, algo que fuimos
       # apuntando según creabamos las celdillas en el Image J)
-      # roi.path <- "roi/"
-      # roi.file.names <- roi.paths[[1]]
-      roi.file.names <- roi.path
-      x_roi5 <- RImageJROI::read.ijroi(roi.file.names, verbose = FALSE)
+      # roi.path <- roi.paths[[1]]
+      x_roi5 <- RImageJROI::read.ijroi(roi.path, verbose = FALSE)
       
       # una vez importada el área de interés a nuestro Global Environment vamos a necesitar hacer una serie de cambios de formato
       # hasta llegar a tener objetos SpatialPolygons legibles por crusCover
