@@ -32,7 +32,7 @@ function(roi.path, tif.path){
       first.tif.filename <- Sys.glob(paste0(tif.path, "vis/*.tif"))[[1]]
       # library(raster)
       RGB_stack_DEM <- raster::stack(first.tif.filename)
-      bandred <- raster(first.tif.filename, band=1)
+      bandred <- raster::raster(first.tif.filename, band=1)
       
       # En el vector de coordenadas y de la ventana hcemos la operación 1 y 2
       w5_y_corr <- (nrow(as.matrix(bandred)) - (as.data.frame(x_owin5))$y) / nrow(RGB_stack_DEM)
