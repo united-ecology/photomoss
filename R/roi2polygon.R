@@ -1,5 +1,4 @@
-roi2polygon <-
-function(roi.path, tif.path){
+roi2polygon <- function(roi.path, tif.path){
       # Para importar los archivos punto .roi instalamos el paquete "RImageJROI"
       # library(RImageJROI)
       
@@ -8,7 +7,7 @@ function(roi.path, tif.path){
       # y orden conocido de los alveolos en la fotografía, algo que fuimos
       # apuntando según creabamos las celdillas en el Image J)
       # roi.path <- "roi/"
-      # roi.file.names <- Sys.glob(paste0(roi.path, "*.roi"))
+      # roi.file.names <- roi.paths[[1]]
       roi.file.names <- roi.path
       x_roi5 <- RImageJROI::read.ijroi(roi.file.names, verbose = FALSE)
       
@@ -31,8 +30,8 @@ function(roi.path, tif.path){
       # tif.path <- "tif/"
       first.tif.filename <- Sys.glob(paste0(tif.path, "vis/*.tif"))[[1]]
       # library(raster)
-      RGB_stack_DEM <- stack(first.tif.filename)
-      bandred <- raster(first.tif.filename, band=1)
+      RGB_stack_DEM <- raster::stack(first.tif.filename)
+      bandred <- raster::raster(first.tif.filename, band=1)
       
       # En el vector de coordenadas y de la ventana hcemos la operación 1 y 2
       w5_y_corr <- (nrow(as.matrix(bandred)) - (as.data.frame(x_owin5))$y) / nrow(RGB_stack_DEM)
@@ -50,5 +49,6 @@ function(roi.path, tif.path){
       # creamos el objeto SpatialPolygons
       sps <- sp::SpatialPolygons(list(ps5))
       # plot(sps, add=T, col="red")
+      # plot(sps, col="red")
       return(sps)
 }

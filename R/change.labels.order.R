@@ -22,5 +22,5 @@ change.labels.order <- function(path) {
   names[is.na(names$names), "names"] <- "mossless"
   print(names)
   
-  write.table(names, "tif.mossless/names.csv", row.names=F, quote=F)
+  write.table(names, "names.csv", row.names=F, quote=F)
 }
