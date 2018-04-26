@@ -1,5 +1,13 @@
-change.labels.order <- function(path) {
-  all.names <- read.csv(path)
+change.labels.order <- function(input.path, input.file) {
+      
+      if(any(list.files(getwd())%in%"nir") & any(list.files(getwd())%in%"vis")){}else{
+            wd <- getwd()
+            setwd(input.path)
+            on.exit(setwd(wd))
+      }
+      
+      
+  all.names <- read.csv(input.file)
   
   pots <- nrow(all.names)
   
