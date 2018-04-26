@@ -16,3 +16,4 @@ License: GPL (>= 2)
 Depends: raster
 Imports: dplyr, rgeos, data.table, tiff, sp, RColorBrewer, spatstat, RImageJROI
 BugReports: https://github.com/united-ecology/photomoss/issues
+LazyData: true
