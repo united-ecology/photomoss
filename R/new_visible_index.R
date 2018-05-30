@@ -1,251 +1,239 @@
-
-#########################################################################################################################################
-
 #spectral normalization
 
 rgb.spectral.normalization <- function(r) {
   red.normalized.coordinates <-
-    getValues(r[[1]]) / max(getValues(r[[1]]) )
+    raster::getValues(r[[1]]) / max(raster::getValues(r[[1]]))
   green.normalized.coordinates <-
-    getValues(r[[2]]) / max(getValues(r[[2]]))
+    raster::getValues(r[[2]]) / max(raster::getValues(r[[2]]))
   blue.normalized.coordinates <-
-    getValues(r[[3]]) / max(getValues(r[[3]]))
+    raster::getValues(r[[3]]) / max(raster::getValues(r[[3]]))
   
-  rgb.norm <- r
+  rgb.norm <- raster::raster(r)
   
-  rgb.norm <- setValues(rgb.norm, (red.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
-  )), layer= 1 )
-    rgb.norm <- setValues(rgb.norm, (green.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
-  )), layer= 2 )
-  rgb.norm <- setValues(rgb.norm, (blue.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
-  )), layer= 3 )
+
+  red.norm <-
+    raster::setValues (rgb.norm, (
+      red.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
+  
+  green.norm <-
+    raster::setValues(rgb.norm, (
+      green.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
+  
+  blue.norm <-
+    raster::setValues(rgb.norm, (
+      blue.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
+  
+  rgb.norm <- raster::brick(red.norm, green.norm, blue.norm)
+  # 
   return(rgb.norm)
 }
 
-
-r.rgb.norm <- rgb.spectral.normalization(r)
-r.rgb.norm
-lr.rgb.norm <- rgb.spectral.normalization(lr)
-lr.rgb.norm
 #####################################################################################################################################
 
 
 excess.red <- function(r) {
-  
   red.normalized.coordinates <-
-   getValues(r[[1]]) / max(getValues(r[[1]]))
+    raster::getValues(r[[1]]) / max(raster::getValues(r[[1]]))
   green.normalized.coordinates <-
-    getValues(r[[2]]) / max(getValues(r[[2]]))
+    raster::getValues(r[[2]]) / max(raster::getValues(r[[2]]))
   blue.normalized.coordinates <-
-    getValues(r[[3]]) / max(getValues(r[[3]]))
+    raster::getValues(r[[3]]) / max(raster::getValues(r[[3]]))
   
-  rgb.norm <- raster(r)
+  rgb.norm <- raster::raster(r)
   
   
-  red.norm <- setValues (rgb.norm, (red.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
+  red.norm <-
+    raster::setValues (rgb.norm, (
+      red.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
-  ??setValues
-  green.norm <- setValues(rgb.norm, (green.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
-
-  blue.norm <- setValues(rgb.norm, (blue.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
-
-  rgb.norm <- brick(red.norm, green.norm, blue.norm)
   
-  ex.red <- raster(r[[1]])
-  v <- 1.4 *  getValues(rgb.norm[[1]]) -  getValues(rgb.norm[[2]])
-  ex.red <- setValues(ex.red, v)
+  green.norm <-
+    raster::setValues(rgb.norm, (
+      green.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
+  
+  blue.norm <-
+    raster::setValues(rgb.norm, (
+      blue.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
+  
+  rgb.norm <- raster::brick(red.norm, green.norm, blue.norm)
+  
+  ex.red <- raster::raster(r[[1]])
+  v <-
+    1.4 *  raster::getValues(rgb.norm[[1]]) -  raster::getValues(rgb.norm[[2]])
+  ex.red <- raster::setValues(ex.red, v)
   
   return(ex.red)
   
-  }
+}
 
-# ex.red <- excess.red(lr)
-# ex.red
 ########################################################################################################################################
 # Excess Green
 
 excess.green <- function(r) {
-  
   red.normalized.coordinates <-
-    getValues(r[[1]]) / max(getValues(r[[1]]))
+    raster::getValues(r[[1]]) / max(raster::getValues(r[[1]]))
   green.normalized.coordinates <-
-    getValues(r[[2]]) / max(getValues(r[[2]]))
+    raster::getValues(r[[2]]) / max(raster::getValues(r[[2]]))
   blue.normalized.coordinates <-
-    getValues(r[[3]]) / max(getValues(r[[3]]))
+    raster::getValues(r[[3]]) / max(raster::getValues(r[[3]]))
   
-  rgb.norm <- raster(r)
+  rgb.norm <- raster::raster(r)
   
   
-  red.norm <- setValues (rgb.norm, (red.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
+  red.norm <-
+    raster::setValues (rgb.norm, (
+      red.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
-  green.norm <- setValues(rgb.norm, (green.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
+  green.norm <-
+    raster::setValues(rgb.norm, (
+      green.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
-  blue.norm <- setValues(rgb.norm, (blue.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
+  blue.norm <-
+    raster::setValues(rgb.norm, (
+      blue.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
-  rgb.norm <- brick(red.norm, green.norm, blue.norm)
+  rgb.norm <- raster::brick(red.norm, green.norm, blue.norm)
   
-  # red.normalized.coordinates <- values(r[[1]]) / max(values(r[[1]]))
-  # green.normalized.coordinates <-
-  #   values(r[[2]]) / max(values(r[[2]]))
-  # blue.normalized.coordinates <-
-  #   values(r[[3]]) / max(values(r[[3]]))
-  # 
-  # rgb.norm <- r
-  # values(rgb.norm[[1]]) <-
-  #   red.normalized.coordinates / (
-  #     red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
-  #   )
-  # values(rgb.norm[[2]]) <-
-  #   green.normalized.coordinates / (
-  #     red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
-  #   )
-  # values(rgb.norm[[3]]) <-
-  #   blue.normalized.coordinates / (
-  #     red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
-  #   )
-  # 
-  # ex.red <- raster(r[[1]])
-  # v <- 1.4 *  getValues(rgb.norm[[1]]) -  getValues(rgb.norm[[2]])
-  # ex.red <- setValues(ex.red, v)
-  # 
-  # return(ex.red)
   
-    ex.green <- raster(r[[2]])
-    v <- 2 * getValues(rgb.norm[[2]]) - getValues(rgb.norm[[1]]) - getValues(rgb.norm[[3]])
-    ex.green <- setValues(ex.green, v)
-
+  ex.green <- raster::raster(r[[2]])
+  v <-
+    2 * raster::getValues(rgb.norm[[2]]) - raster::getValues(rgb.norm[[1]]) - raster::getValues(rgb.norm[[3]])
+  ex.green <- raster::setValues(ex.green, v)
+  
   return(ex.green)
 }
 
-excess.green(lr)
+
 ###########################################################################################################################
 # Excess Blue
 excess.blue <- function(r) {
+  red.normalized.coordinates <-
+    raster::getValues(r[[1]]) / max(raster::getValues(r[[1]]))
+  green.normalized.coordinates <-
+    raster::getValues(r[[2]]) / max(raster::getValues(r[[2]]))
+  blue.normalized.coordinates <-
+    raster::getValues(r[[3]]) / max(raster::getValues(r[[3]]))
+  
+  rgb.norm <- raster::raster(r)
+  
+  
+  red.norm <-
+    raster::setValues (rgb.norm, (
+      red.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
+  
+  green.norm <-
+    raster::setValues(rgb.norm, (
+      green.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
+  
+  blue.norm <-
+    raster::setValues(rgb.norm, (
+      blue.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
+  
+  rgb.norm <- raster::brick(red.norm, green.norm, blue.norm)
 
-red.normalized.coordinates <-
-  getValues(r[[1]]) / max(getValues(r[[1]]))
-green.normalized.coordinates <-
-  getValues(r[[2]]) / max(getValues(r[[2]]))
-blue.normalized.coordinates <-
-  getValues(r[[3]]) / max(getValues(r[[3]]))
-
-rgb.norm <- raster(r)
-
-
-red.norm <- setValues (rgb.norm, (red.normalized.coordinates / (
-  red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
-
-green.norm <- setValues(rgb.norm, (green.normalized.coordinates / (
-  red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
-
-blue.norm <- setValues(rgb.norm, (blue.normalized.coordinates / (
-  red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
-
-rgb.norm <- brick(red.norm, green.norm, blue.norm)
-# excess.blue <- function(r) {
-#   red.normalized.coordinates   <- values(r[[1]]) / max(values(r[[1]]))
-#   green.normalized.coordinates <-
-#     values(r[[2]]) / max(values(r[[2]]))
-#   blue.normalized.coordinates  <-
-#     values(r[[3]]) / max(values(r[[3]]))
-#   
-#   rgb.norm <- r
-#   values(rgb.norm[[1]]) <-
-#     red.normalized.coordinates / (
-#       red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
-#     )
-#   values(rgb.norm[[2]]) <-
-#     green.normalized.coordinates / (
-#       red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
-#     )
-#   values(rgb.norm[[3]]) <-
-#     blue.normalized.coordinates / (
-#       red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
-#     )
-  ex.blue <- raster(r[[3]])
-  v<- 1.4 * values(rgb.norm[[3]]) - values(rgb.norm[[2]])
-  ex.blue <- setValues(ex.blue, v)
+  ex.blue <- raster::raster(r[[3]])
+  v <- 1.4 * raster::getValues(rgb.norm[[3]]) - raster::getValues(rgb.norm[[2]])
+  ex.blue <- raster::setValues(ex.blue, v)
   return(ex.blue)
 }
 
-excess.blue(lr)
+
 
 ##########################################################################
 # Excess green minus excess red: ExGR = ExG-ExR
 
 excess.green.sub.excess.red <- function(r) {
-
   red.normalized.coordinates <-
-    getValues(r[[1]]) / max(getValues(r[[1]]))
+    raster::getValues(r[[1]]) / max(raster::getValues(r[[1]]))
   green.normalized.coordinates <-
-    getValues(r[[2]]) / max(getValues(r[[2]]))
+    raster::getValues(r[[2]]) / max(raster::getValues(r[[2]]))
   blue.normalized.coordinates <-
-    getValues(r[[3]]) / max(getValues(r[[3]]))
+    raster::getValues(r[[3]]) / max(raster::getValues(r[[3]]))
   
-  rgb.norm <- raster(r)
+  rgb.norm <- raster::raster(r)
   
   
-  red.norm <- setValues (rgb.norm, (red.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
+  red.norm <-
+    raster::setValues (rgb.norm, (
+      red.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
-  green.norm <- setValues(rgb.norm, (green.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
+  green.norm <-
+    raster::setValues(rgb.norm, (
+      green.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
-  blue.norm <- setValues(rgb.norm, (blue.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
+  blue.norm <-
+    raster::setValues(rgb.norm, (
+      blue.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
-  rgb.norm <- brick(red.norm, green.norm, blue.norm)
-    
-  # red.normalized.coordinates <- 
-  #   values(r[[1]]) / max(values(r[[1]]))
-  # green.normalized.coordinates <-
-  #   values(r[[2]]) / max(values(r[[2]]))
-  # blue.normalized.coordinates <-
-  #   values(r[[3]]) / max(values(r[[3]]))
-  # 
-  # rgb.norm <- r
-  # values(rgb.norm[[1]]) <-
-  #   red.normalized.coordinates / (
-  #     red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
-  #   )
-  # values(rgb.norm[[2]]) <-
-  #   green.normalized.coordinates / (
-  #     red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
-  #   )
-  # values(rgb.norm[[3]]) <-
-  #   blue.normalized.coordinates / (
-  #     red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
-  #   )
-
-  ex.green <- raster(r[[2]])
-  v <- 2 * getValues(rgb.norm[[2]]) - getValues(rgb.norm[[1]]) - getValues(rgb.norm[[3]])
-  ex.green <- setValues(ex.green, v)
+  rgb.norm <- raster::brick(red.norm, green.norm, blue.norm)
+  
+  ex.green <- raster::raster(r[[2]])
+  v <-
+    2 * raster::getValues(rgb.norm[[2]]) - raster::getValues(rgb.norm[[1]]) - raster::getValues(rgb.norm[[3]])
+  ex.green <- raster::setValues(ex.green, v)
   
   # ex.green <- raster(rrgb.norm [[2]]
   # values(ex.green) <-
   #   2  * values(rgb.norm[[2]]) - values(rgb.norm[[1]]) - values(rgb.norm[[3]])
   #
-  ex.red <- raster(r[[1]])
-  v <- 1.4 *  getValues(rgb.norm[[1]]) -  getValues(rgb.norm[[2]])
-  ex.red <- setValues(ex.red, v)  
-   
+  ex.red <- raster::raster(r[[1]])
+  v <-
+    1.4 *  raster::getValues(rgb.norm[[1]]) -  raster::getValues(rgb.norm[[2]])
+  ex.red <- raster::setValues(ex.red, v)
+  
   # ex.red <- rgb.norm[[1]]
   # values(ex.red) <-
   #   1.4 * values(rgb.norm[[1]]) - values(rgb.norm[[2]])
-  # 
-  exgr <- raster(r[[1]])
-  v <- getValues(ex.green) - getValues(ex.red)
-  exgr <- setValues(exgr,v)
+  #
+  exgr <- raster::raster(r[[1]])
+  v <- raster::getValues(ex.green) - raster::getValues(ex.red)
+  exgr <- raster::setValues(exgr, v)
   return(exgr)
 }
 
@@ -255,28 +243,41 @@ excess.green.sub.excess.red <- function(r) {
 # Color index of vegetation extraction CIVE
 cive <- function(r) {
   red.normalized.coordinates <-
-    getValues(r[[1]]) / max(getValues(r[[1]]))
+    raster::getValues(r[[1]]) / max(raster::getValues(r[[1]]))
   green.normalized.coordinates <-
-    getValues(r[[2]]) / max(getValues(r[[2]]))
+    raster::getValues(r[[2]]) / max(raster::getValues(r[[2]]))
   blue.normalized.coordinates <-
-    getValues(r[[3]]) / max(getValues(r[[3]]))
+    raster::getValues(r[[3]]) / max(raster::getValues(r[[3]]))
   
-  rgb.norm <- raster(r)
+  rgb.norm <- raster::raster(r)
   
-  red.norm <- setValues (rgb.norm, (red.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
+  red.norm <-
+    raster::setValues (rgb.norm, (
+      red.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
-  green.norm <- setValues(rgb.norm, (green.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
+  green.norm <-
+    raster::setValues(rgb.norm, (
+      green.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
-  blue.norm <- setValues(rgb.norm, (blue.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
+  blue.norm <-
+    raster::setValues(rgb.norm, (
+      blue.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
-  rgb.norm <- brick(red.norm, green.norm, blue.norm)
+  rgb.norm <- raster::brick(red.norm, green.norm, blue.norm)
   
-  cive <- raster(r[[1]])
-  v <- 0.441 * getValues(rgb.norm[[1]]) - 0.811 * getValues(rgb.norm[[2]]) + 0.385 * getValues(rgb.norm[[3]]) + 18.78745
-  cive <- setValues(cive, v)
+  cive <- raster::raster(r[[1]])
+  v <-
+    0.441 * raster::getValues(rgb.norm[[1]]) - 0.811 * raster::getValues(rgb.norm[[2]]) + 0.385 * raster::getValues(rgb.norm[[3]]) + 18.78745
+  cive <- raster::setValues(cive, v)
   return(cive)
 }
 
@@ -284,33 +285,47 @@ cive <- function(r) {
 #Vegetative
 
 veg <- function(r) {
-  
   red.normalized.coordinates <-
-    getValues(r[[1]]) / max(getValues(r[[1]]))
+    raster::getValues(r[[1]]) / max(raster::getValues(r[[1]]))
   green.normalized.coordinates <-
-    getValues(r[[2]]) / max(getValues(r[[2]]))
+    raster::getValues(r[[2]]) / max(raster::getValues(r[[2]]))
   blue.normalized.coordinates <-
-    getValues(r[[3]]) / max(getValues(r[[3]]))
+    raster::getValues(r[[3]]) / max(raster::getValues(r[[3]]))
   
-  rgb.norm <- raster(r)
+  rgb.norm <- raster::raster(r)
   
-  red.norm <- setValues (rgb.norm, (red.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
+  red.norm <-
+    raster::setValues (rgb.norm, (
+      red.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
-  green.norm <- setValues(rgb.norm, (green.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
+  green.norm <-
+    raster::setValues(rgb.norm, (
+      green.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
-  blue.norm <- setValues(rgb.norm, (blue.normalized.coordinates / (
-    red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates)))
+  blue.norm <-
+    raster::setValues(rgb.norm, (
+      blue.normalized.coordinates / (
+        red.normalized.coordinates + green.normalized.coordinates + blue.normalized.coordinates
+      )
+    ))
   
-  rgb.norm <- brick(red.norm, green.norm, blue.norm)
+  rgb.norm <- raster::brick(red.norm, green.norm, blue.norm)
   
   
-  veg <- raster(r[[1]])
+  veg <- raster::raster(r[[1]])
   
-  v <- c(getValues(rgb.norm[[2]]) / ((getValues(rgb.norm[[1]]) ^ 0.667) - getValues(rgb.norm[[3]]) ^ (1 - 0.667)))  
-  veg <- setValues(veg, r) 
+  v <-
+    raster::getValues(rgb.norm[[2]]) / ((raster::getValues(rgb.norm[[1]]) ^ 0.667) - raster::getValues(rgb.norm[[3]]) ^ (1 - 0.667))
+   
+  veg <- raster::setValues(veg, v)
   return(veg)
 }
 
-################################################################################
+
+
